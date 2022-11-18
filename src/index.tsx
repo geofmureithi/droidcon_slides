@@ -19,6 +19,7 @@ import {
   H3,
   P,
   Image,
+  Video,
 } from "@gregcello/revealjs-react";
 
 import "reveal.js/dist/reveal.css";
@@ -30,6 +31,13 @@ import rust_plugin from "../static/rust_plugin.png";
 import jni_svg from "../static/jni.svg";
 import new_project from "../static/new_project.png";
 import docx_lib from "../static/docx_lib.png";
+
+import floui from "../static/floui.png";
+
+import opengl_droidcon from "../static/opengl_droidcon.jpg";
+
+import docx_preview from "../static/docx_preview.jpg";
+import docx_app from "../static/docx_app.jpg";
 
 const SIMPLE_APP = `
 use jni::{
@@ -65,6 +73,21 @@ const App = () => {
         <H3>Using Rust for Android Development</H3>
         <H4>The basics, UIs and Advancing into NDK</H4>
         <H5>With Njuguna Mureithi @tweetofnjuguna</H5>
+      </Slide>
+      <Slide>
+        <H4>Who am I?</H4>
+        <Fragment>
+          <P>Currently working on #web3 at Eiger</P>
+        </Fragment>
+        <Fragment>
+          <P>Previously worked on Android apps at Safaricom Innovation hub</P>
+        </Fragment>
+        <Fragment>
+          <P>
+            Currently maintaining several opensource rust libs like Hirola
+            (Wasm) and Apalis (Background jobs)
+          </P>
+        </Fragment>
       </Slide>
       <Slide>
         <H5>Motivation for this talk</H5>
@@ -106,39 +129,15 @@ const App = () => {
         </Ul>
       </Slide>
       <Slide>
-        <H3>The simplest app possible?</H3>
-        <pre>
-          <Code
-            lang="rust"
-            children={{
-              code: SIMPLE_APP,
-            }}
-          ></Code>
-        </pre>
-        <Fragment>Done deal?</Fragment>
-        <Fragment>No...... This does not work.</Fragment>
-      </Slide>
-      <Slide>
-        <H3>Why doesn't it work?</H3>
-        <Fragment>
-          <BlockQuote>
-            You have to aim to use Android's native widgets, and these are all
-            in Java (via the Android SDK). Using them with the NativeActivity
-            won't work.
-          </BlockQuote>
-          <H6>Mohammed Alyousef: The creator of fltk-rs</H6>
-        </Fragment>
-        <Fragment>
-          <BlockQuote>
-            Unless developing a game, my personal view is to develop using the
-            platform provided tools for the path of least resistance. In this
-            case, Android SDK and Android Studio.
-          </BlockQuote>
-        </Fragment>
-      </Slide>
-      <Slide>
         <Slide>
-          <H3>A Library Example</H3>
+          <H4>A Library Example</H4>
+          <Note>
+            Lets start simple. and we shall keep increasing in complexity{" "}
+          </Note>
+          <Note>
+            You can write a library in Rust and expose it to multiple platforms
+            and languages eg Android, Ios, PHP etc.
+          </Note>
           <Image src={jni_svg} />
           <P>
             Rust {"<"}-------{">"} Android
@@ -181,7 +180,7 @@ const App = () => {
             <P>Ui is the usual ways (Jetpack Compose, XML) etc</P>
           </Fragment>
           <Fragment>
-            <P>Expose rust code via native methods</P>
+            <P>Expose rust library via native methods</P>
           </Fragment>
           <Fragment>
             <P>Generate glue code to help with interfacing</P>
@@ -328,14 +327,23 @@ impl AndroidDocBuilder {
           />
         </Slide>
         <Slide>
-          <Image width={"50%"} src={docx_lib} />
-          <P>https://github.com/geofmureithi/DocxGenerator</P>
+          <H4>Output</H4>
+          <Image width={"50%"} src={docx_app} />
+          <Image width={"50%"} src={docx_preview} />
+        </Slide>
+        <Slide>
+          <P>
+            Code is available at https://github.com/geofmureithi/DocxGenerator
+          </P>
         </Slide>
       </Slide>
       <Slide>
         <Slide>
-          <H4>NativeActivity/GameActivity</H4>
+          <H4>Building UIs with Rust</H4>
           <Ul>
+            <Fragment>
+              <Li>Hybrid Solution: Write Native views in Rust</Li>
+            </Fragment>
             <Fragment>
               <Li>
                 Native Activity: Good for interfacing with UI Libs like e-gui
@@ -346,13 +354,245 @@ impl AndroidDocBuilder {
             </Fragment>
           </Ul>
         </Slide>
+
         <Slide>
-          <H5></H5>
+          <H3>NativeActivity with setContentView?</H3>
+          <Code
+            lang="rust"
+            children={{
+              code: SIMPLE_APP,
+            }}
+          ></Code>
+          <P>https://github.com/geofmureithi/native-activity-rust</P>
+          <Fragment>Done deal? </Fragment>
+          <Fragment>No...... This does not work.</Fragment>
+        </Slide>
+        <Slide>
+          <H3>Why doesn't it work?</H3>
+          <Fragment>
+            <BlockQuote>
+              You have to aim to use Android's native widgets, and these are all
+              in Java (via the Android SDK). Using them with the NativeActivity
+              won't work.
+            </BlockQuote>
+            <H6>Mohammed Alyousef: The creator of fltk-rs</H6>
+          </Fragment>
+          <Fragment>
+            <BlockQuote>
+              Unless developing a game, my personal view is to develop using the
+              platform provided tools for the path of least resistance. In this
+              case, Android SDK and Android Studio.
+            </BlockQuote>
+          </Fragment>
+        </Slide>
+        <Slide>
+          <H4>Hybrid UI: UI with Rust + an Android Activity</H4>
+          <Note>
+            How can we write UI code in Rust and render native widgets. This
+            approach still needs the usual android setup
+          </Note>
+          <Code
+            lang="rust"
+            children={{
+              code: `
+fn mygui(vc: &ViewController) -> MainView {
+    let count = Rc::from(RefCell::from(0));
+    MainView::new(
+        &vc,
+        &[
+            &Button::new("Increment").foreground(Color::Blue).action({
+                let count = count.clone();
+                move |_| {
+                    log("Increment clicked");
+                    let mut c = count.borrow_mut();
+                    *c += 1;
+                    let t: Text = from_id("mytext").unwrap();
+                    t.text(&format!("{}", c));
+                }
+            }),
+            &Text::new("0").id("mytext").center().bold(),
+            &Button::new("Decrement")
+                .foreground(Color::Red)
+                .action(move |_| {
+                    log("Decrement clicked");
+                    let mut c = count.borrow_mut();
+                    *c -= 1;
+                    let t: Text = from_id("mytext").unwrap();
+                    t.text(&format!("{}", c));
+                }),
+        ],
+    )
+}
+
+#[no_mangle]
+extern "C" fn floui_main(arg1: *mut c_void, arg2: *mut c_void, arg3: *mut c_void) -> *mut c_void {
+    let vc = unsafe { ViewController::new(arg1, arg2, arg3) };
+    mygui(&vc).underlying() as _
+}
+
+#[no_mangle]
+extern "C" fn floui_handle_events(arg1: *mut c_void) {
+    unsafe { ViewController::handle_events(arg1); }
+}`,
+            }}
+          ></Code>
+        </Slide>
+        <Slide>
+          <H4>Our Main Activity</H4>
+          <Code
+            lang="java"
+            children={{
+              code: `
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, Slider.OnChangeListener {
+    static {
+        System.loadLibrary("myapplication");
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        ConstraintLayout layout = new ConstraintLayout(this);
+        setContentView(layout);
+        mainView(layout);
+    }
+    public native View mainView(View view);
+    public native void handleEvent(View view);
+
+    @Override
+    public void onClick(View view) {
+        handleEvent(view);
+    }
+
+    @Override
+    public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
+        handleEvent(slider);
+    }
+}
+                `,
+            }}
+          />
+        </Slide>
+        <Slide>
+          <H4>The Output</H4>
+          <Image src={floui} />
+          <P>https://github.com/MoAlyousef/floui-rs-template</P>
+        </Slide>
+        <Slide>
+          <H4>Pros & Cons</H4>
+          <H6>Advantages</H6>
+          <Ul>
+            <Fragment>
+              <Li>Cross-platform Development - works on IOS</Li>
+            </Fragment>
+            <Fragment>
+              <Li>Uses fully native widgets guaranteeing performance</Li>
+            </Fragment>
+          </Ul>
+          <H6>Disadvantages</H6>
+          <Ul>
+            <Fragment>
+              <Li>Building is a pain esp on Mac</Li>
+            </Fragment>
+            <Fragment>
+              <Li>You have to manually write widgets</Li>
+            </Fragment>
+            <Fragment>
+              <Li>
+                You need to learn interior mutability eg {`Rc<RefCell<T>>`}
+                <Note>
+                  this can be needlessly hard and is called "fighting the borrow
+                  checker"
+                </Note>
+              </Li>
+            </Fragment>
+          </Ul>
         </Slide>
       </Slide>
       <Slide>
         <Slide>
-          <H4>Using WebView + Webassembly</H4>
+          <H4>Native/Game Activity with no Java/Kt Code</H4>
+          <Fragment>
+            <P>
+              Since we are not using the default view rendering engine, we have
+              to bring our own. This includes backends such as opengl.
+            </P>
+          </Fragment>
+          <Fragment>
+            <P>This is how some games and VR apps are built.</P>
+            {/* <Video src={vr_example} muted={true} width="320"></Video> */}
+            <P>https://twitter.com/malekiRe/status/1591223843364171776</P>
+          </Fragment>
+        </Slide>
+
+        <Slide>
+          <H4>OpenGl Example</H4>
+          <P>We are going to use a Gaming engine called gamegl</P>
+          <P>We are going to render the droidconKe logo on a blue background</P>
+          <P>We are not going to write any Java/Kt code</P>
+        </Slide>
+        <Slide>
+          <H4>Our Cargo.toml</H4>
+          <Code
+            children={{
+              code: `[lib]
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+game-gl = { git = "https://github.com/Kaiser1989/game-gl" }
+log = "0.4.11"
+simple_logger = "1.11.0"
+
+[target.'cfg(target_os = "android")'.dependencies]
+ndk-glue = "0.5.0"
+
+[package.metadata.android]
+build_targets = [ "armv7-linux-androideabi", "aarch64-linux-android", "i686-linux-android", "x86_64-linux-android" ]
+opengles_version_major = 3
+opengles_version_minor = 0
+assets = "assets"`,
+            }}
+          />
+        </Slide>
+        <Slide>
+          <Code
+            children={{
+              code: `
+...
+impl Runner for ExampleRunner {
+    fn init(&mut self) {}
+    fn cleanup(&mut self) {}
+    fn update(&mut self, _elapsed_time: f32) {}
+
+    fn input(&mut self, input_events: &[InputEvent]) {
+      // Handle input
+    }
+    fn render(&mut self, gl: &Gl) {
+      unsafe {
+          gl.ClearColor(0.0, 0.0, 1.0, 1.0); // r g b a: Sets background to blue
+          ....
+      }
+    }
+    fn create_device(&mut self, gl: &Gl) {
+      // create resources
+      ....
+      self.ubo.update(&(0.5, 0.9, 0.9, 1.0));
+
+      let image = image::load_from_memory(&File::load_bytes("droidcon.png").unwrap()).unwrap().to_rgba8();
+      self.texture = GlTexture::new(gl, &[image]);
+    }
+} 
+            `,
+            }}
+          />
+        </Slide>
+        <Slide>
+          <H4>The Output</H4>
+          <Image width={"30%"} src={opengl_droidcon} />
+        </Slide>
+      </Slide>
+      <Slide>
+        <Slide>
+          <H4>Bonus: Using WebView + Webassembly</H4>
           <Ul>
             <Fragment>
               <Li>Using tools like Tauri</Li>
@@ -367,7 +607,7 @@ impl AndroidDocBuilder {
           <Code
             lang="rust"
             children={{
-              code: `// main.rs
+              code: ` 
               use dioxus::prelude::*;
               
               fn main() {
@@ -385,7 +625,7 @@ impl AndroidDocBuilder {
           />
         </Slide>
         <Slide>
-          <H4>Advantages of this approach</H4>
+          <H4>Advantages</H4>
           <Ul>
             <Fragment>
               <Li>Can be reasonable if you want to target web + mobile</Li>
@@ -394,7 +634,43 @@ impl AndroidDocBuilder {
               <Li>Allows access to rich Webassembly ecosystem libraries</Li>
             </Fragment>
           </Ul>
+          <H4>Disadvantages</H4>
+          <Ul>
+            <Fragment>
+              <Li>Requires shift to web technologies</Li>
+            </Fragment>
+            <Fragment>
+              <Li>* Webassembly has its caveats eg browser support</Li>
+            </Fragment>
+          </Ul>
         </Slide>
+      </Slide>
+      <Slide>
+        <H4>Takeaways for Rust in Android</H4>
+        <Ul>
+          <Fragment>
+            <Li>Rust has a lot to bring to the table</Li>
+          </Fragment>
+          <Fragment>
+            <Li>There are multiple approaches for different cases</Li>
+          </Fragment>
+          <Fragment>
+            <Li>Some things may be a pain but the Rust ecosystem is growing</Li>
+          </Fragment>
+          <Fragment>
+            <Li>We didn't discuss performance. I expect it to be par with C</Li>
+          </Fragment>
+        </Ul>
+      </Slide>
+      <Slide>
+        <H4>Credits</H4>
+        <Ul>
+          <Li>
+            Mohammed Alyousef: Helped in brainstorming for this talk, including
+            how to use floui.
+          </Li>
+          <Li>Ronnie Otieno: Helped work on Docx builder</Li>
+        </Ul>
       </Slide>
     </RevealJS>
   );
