@@ -1,5 +1,8 @@
-# Boilerplate starter for React app with TypeScript using Parcel
+# Talk given on DroidCon22
 
-React 18
-TypeScript 4
-Parcel 2
+Links to code:
+
+- DocxBuilder: https://github.com/geofmureithi/DocxGenerator
+- NativeActivity View: https://github.com/geofmureithi/native-activity-rust (Doesnt work)
+- Declarative UI: https://github.com/MoAlyousef/floui-rs-template
+- Android + OpenGl: https://github.com/geofmureithi/android-opengl

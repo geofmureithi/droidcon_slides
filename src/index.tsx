@@ -20,6 +20,7 @@ import {
   P,
   Image,
   Video,
+  ZoomPlugin,
 } from "@gregcello/revealjs-react";
 
 import "reveal.js/dist/reveal.css";
@@ -38,6 +39,12 @@ import opengl_droidcon from "../static/opengl_droidcon.jpg";
 
 import docx_preview from "../static/docx_preview.jpg";
 import docx_app from "../static/docx_app.jpg";
+
+import rust_java from "../static/rust_java.png";
+
+import memory from "../static/memory.jpeg";
+
+import richness from "../static/richness.gif";
 
 const SIMPLE_APP = `
 use jni::{
@@ -68,37 +75,40 @@ pub fn main() {
 
 const App = () => {
   return (
-    <RevealJS plugins={[HighlightPlugin, NotesPlugin]}>
+    <RevealJS plugins={[HighlightPlugin, NotesPlugin, ZoomPlugin]}>
       <Slide>
         <H3>Using Rust for Android Development</H3>
         <H4>The basics, UIs and Advancing into NDK</H4>
         <H5>With Njuguna Mureithi @tweetofnjuguna</H5>
+        <Image height={100} src="https://droidcon.co.ke/images/oporo.png" />
       </Slide>
       <Slide>
         <H4>Who am I?</H4>
-        <Fragment>
-          <P>Currently working on #web3 at Eiger</P>
-        </Fragment>
-        <Fragment>
-          <P>Previously worked on Android apps at Safaricom Innovation hub</P>
-        </Fragment>
-        <Fragment>
-          <P>
-            Currently maintaining several opensource rust libs like Hirola
-            (Wasm) and Apalis (Background jobs)
-          </P>
-        </Fragment>
+        <P>Currently working on #web3 at Eiger</P>
+        <P>Previously worked on Android apps at Safaricom Innovation hub</P>
+        <P>
+          Currently maintaining several opensource rust libs like Hirola (Wasm)
+          and Apalis (Background jobs)
+        </P>
+        <P>
+          Currently building a Low code platform and an OSS Payment standard for
+          Payments in Africa
+        </P>
       </Slide>
       <Slide>
         <H5>Motivation for this talk</H5>
-        <Fragment>Can I use a rust library in my Android app?</Fragment>
-        <br />
-        <Fragment>Can I build UIs for my Android app using Rust?</Fragment>
-        <br />
-        <Fragment>Can I build Android games using Rust?</Fragment>
+        <Fragment>
+          <P>Can I use a rust library in my Android app?</P>
+        </Fragment>
+        <Fragment>
+          <P>Can I build UIs for my Android app using Rust?</P>
+        </Fragment>
+        <Fragment>
+          <P>Can I build Android games using Rust?</P>
+        </Fragment>
         <Note>beginner, intermediate, advanced scenarios</Note>
         <Fragment>
-          <H5>The Answer?</H5>
+          <H4>The Answer?</H4>
         </Fragment>
         <Fragment>Lets dive in and see</Fragment>
       </Slide>
@@ -122,11 +132,15 @@ const App = () => {
               Rust makes certain (bad) patterns more painful than others, which
               is a good thing!.
             </Li>
+            <Image src={memory} width={100} />
           </Fragment>
           <Fragment>
             <Li>Rust rewards data-oriented design with clear ownership</Li>
           </Fragment>
         </Ul>
+      </Slide>
+      <Slide>
+        <Image src={rust_java} />
       </Slide>
       <Slide>
         <Slide>
@@ -195,10 +209,12 @@ const App = () => {
         <Slide>
           <H4>Setup a new Android Project</H4>
           <Image src={new_project} />
+          <Note>This is basic stuff</Note>
         </Slide>
         <Slide>
           <H4>Setup a new Rust Project</H4>
           <Code lang="bash" children={{ code: `$ cargo new docx_lib --lib` }} />
+          <Note>Cargo is Rust's package management</Note>
           <H6>Modify Cargo.toml</H6>
           <Code
             lang="toml"
@@ -301,7 +317,11 @@ impl AndroidDocBuilder {
                         verticalAlignment = Alignment.Top,
                         horizontalArrangement = Arrangement.Start
                     ) {
-                            AddButton(doc)
+                        Button(onClick = {
+                            doc.addText("Lorem Ipsum")
+                        }) {
+                            Text(text = "Add Text")
+                        }
                     }
                     ....
                     Row(
@@ -332,6 +352,10 @@ impl AndroidDocBuilder {
           <Image width={"50%"} src={docx_preview} />
         </Slide>
         <Slide>
+          <H4>Next Steps</H4>
+          <P>Complete the functionality</P>
+          <P>$$$$$$ Become rich as you compete with Javadocx that costs $999</P>
+          <Image height={250} src={richness} />
           <P>
             Code is available at https://github.com/geofmureithi/DocxGenerator
           </P>
@@ -352,6 +376,9 @@ impl AndroidDocBuilder {
             <Fragment>
               <Li>Game Activity: Good for interfacing with Gaming libs</Li>
             </Fragment>
+            <Fragment>
+              <Li>Webview: Write apps with web standards and wasm</Li>
+            </Fragment>
           </Ul>
         </Slide>
 
@@ -363,7 +390,6 @@ impl AndroidDocBuilder {
               code: SIMPLE_APP,
             }}
           ></Code>
-          <P>https://github.com/geofmureithi/native-activity-rust</P>
           <Fragment>Done deal? </Fragment>
           <Fragment>No...... This does not work.</Fragment>
         </Slide>
@@ -389,7 +415,8 @@ impl AndroidDocBuilder {
           <H4>Hybrid UI: UI with Rust + an Android Activity</H4>
           <Note>
             How can we write UI code in Rust and render native widgets. This
-            approach still needs the usual android setup
+            approach still needs the usual android setup. Jetpack Guys: Is
+            Jetpack a joke to you?
           </Note>
           <Code
             lang="rust"
@@ -520,7 +547,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
           <Fragment>
             <P>This is how some games and VR apps are built.</P>
             {/* <Video src={vr_example} muted={true} width="320"></Video> */}
-            <P>https://twitter.com/malekiRe/status/1591223843364171776</P>
           </Fragment>
         </Slide>
 
@@ -671,6 +697,10 @@ impl Runner for ExampleRunner {
           </Li>
           <Li>Ronnie Otieno: Helped work on Docx builder</Li>
         </Ul>
+        <H4>Connect with me</H4>
+        <P>Twitter: @tweetofnjuguna</P>
+        <P>Github: @geofmureithi</P>
+        <P>Website: mureithi.me</P>
       </Slide>
     </RevealJS>
   );
